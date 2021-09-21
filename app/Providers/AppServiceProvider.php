@@ -13,6 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // pegar o serviço do jwt dentro da pasta vendor
+        $this->app->register(\Tymon\JWTAuth\Providers\LumenServiceProvider::class);
     }
 }

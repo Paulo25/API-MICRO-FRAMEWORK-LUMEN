@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Usuario;
+use App\Models\Usuarios;
+use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UsuarioController extends Controller
 {
+    use ApiResponser;
+
     /**
      * Display a listing of the resource.
      *
@@ -15,17 +19,11 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        return response()->json(!empty($usuarios = Usuario::all()) ? $usuarios : 'Nenhum registro encontrado!');
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        if(!$data = Usuarios::all()){
+            return  $this->successResponse([], 'Nenhum registro encontrado!', 200);
+        }
+        
+        return  $this->successResponse($data, 'Operação realizada com sucesso!', 200);
     }
 
     /**
@@ -36,12 +34,18 @@ class UsuarioController extends Controller
      */
     public function store(Request $request)
     {
-        $usuario = new Usuario();
+        $this->validate($request, [
+            'usuario' => 'required|min:5|max:40',
+            'email' => 'required|email|unique:usuarios,email',
+            'password' => 'required'
+        ]);
+
+        $usuario = new Usuarios();
         
         $usuario->usuario    = $request->usuario;
         $usuario->email      = $request->email;
-        $usuario->password   = Hash::make($request->senha);
-        // $usuario->verificado = $request->verificado;
+        $usuario->password   = Hash::make($request->password);
+        $usuario->verificado = isset($request->verificado) ? $request->verificado : '0';
 
         if($usuario->save()){
             return response()->json($usuario, 202);
@@ -59,18 +63,13 @@ class UsuarioController extends Controller
      */
     public function show($id)
     {
-        return response()->json(!empty($usuario = Usuario::find($id)) ? $usuario : 'Nenhum registro encontrado!');
-    }
+        $data = Usuarios::find($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        if($data){
+            $this->successResponse($data, 'Operação realizada com sucesso!', 200);
+        }else{
+            $this->successResponse([], 'Nenhum registro encontrado!', 200);
+        }
     }
 
     /**
@@ -82,11 +81,18 @@ class UsuarioController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $usuario = Usuario::find($id);
+        $this->validate($request, [
+            'usuario'  => 'required|min:5|max:40',
+            'email'    => 'required|email|'. Rule::unique('usuarios')->ignore($id),
+            'password' => 'required'
+        ]);
+        
+        $usuario = Usuarios::find($id);
 
         $usuario->usuario = $request->usuario;
         $usuario->email = $request->email;
-        $usuario->password = $request->senha;
+        $usuario->password   = Hash::make($request->password);
+        $usuario->verificado = isset($request->verificado) ? $request->verificado : '0';
 
         if($usuario->update()){
             return response()->json($usuario, 200);
@@ -104,7 +110,7 @@ class UsuarioController extends Controller
      */
     public function destroy($id)
     {
-        $usuario = Usuario::find($id);
+        $usuario = Usuarios::find($id);
 
         if($usuario->delete()){
             return response()->json('Deletado com sucesso!', 200);

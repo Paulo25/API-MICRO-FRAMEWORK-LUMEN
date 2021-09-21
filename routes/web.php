@@ -31,3 +31,6 @@ $router->group(['prefix' => 'usuario'], function() use ($router){
 
 });
 
+$router->post('/login', 'Auth\AuthenticateController@login');
+
+// $route->post('/info', 'Auth\AuthenticateController@me');

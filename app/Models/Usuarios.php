@@ -8,10 +8,17 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class Usuario extends Model implements AuthenticatableContract, AuthorizableContract
+class Usuarios extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
 {
     use Authenticatable, Authorizable, HasFactory;
+    
+    protected $table = 'usuarios';
+
+    protected $primaryKey = 'id';
+
+    protected $timestamp = true;
 
     /**
      * The attributes that are mass assignable.
@@ -19,7 +26,7 @@ class Usuario extends Model implements AuthenticatableContract, AuthorizableCont
      * @var array
      */
     protected $fillable = [
-        'id', 'usuario', 'email', 'verificado'
+        'usuario', 'email', 'verificado'
     ];
 
     /**
@@ -30,5 +37,19 @@ class Usuario extends Model implements AuthenticatableContract, AuthorizableCont
     protected $hidden = [
         'password'
     ];
+
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     */
+    public function getJWTIdentifier(){
+        return  $this->getKey(); 
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     */
+    public function getJWTCustomClaims(){
+        return [];
+    }
 
 }
